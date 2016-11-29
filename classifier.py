@@ -19,7 +19,7 @@ if len(sys.argv) != 2:
 db = client[db_name]
 
 # loop all videos that do not have any geotags and are younger than 1 year
-videos = db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"], limit=9900)
+videos = db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"], limit=10000)
 print videos.count()
 
 for vid in videos:
@@ -28,7 +28,7 @@ for vid in videos:
 
 	# try to get some place information
 	headers = {
-		"X-RosetteAPI-Key": config.apiKey(),
+		"X-RosetteAPI-Key": config.apiKey()[2],
 		"Content-Type": "application/json",
 		"Accept": "application/json"
 	}
@@ -43,18 +43,21 @@ for vid in videos:
 		for entity in result["entities"]:
 			if entity["type"] == "LOCATION":
 
-				location = geolocator.geocode(entity["normalized"])
-				if location:
+				try:
+					location = geolocator.geocode(entity["normalized"])
+					if location:
 
-					print vid["_id"], entity["normalized"], location.longitude, location.latitude
+						print vid["_id"], entity["normalized"], location.longitude, location.latitude
 
-					locations.append({
-						"type": "Point",
-						"coordinates": [
-							location.longitude,
-							location.latitude
-						]
-					})
+						locations.append({
+							"type": "Point",
+							"coordinates": [
+								location.longitude,
+								location.latitude
+							]
+						})
+				except:
+					pass
 
 		if len(locations) > 0:
 			db.videos.update_one({"_id": vid["_id"]}, {"$set": {

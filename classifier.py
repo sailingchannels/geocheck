@@ -1,6 +1,5 @@
 from pymongo import MongoClient
-import config, sys, time, requests, json
-from geopy.geocoders import Nominatim
+import config, sys, time, requests, json, urllib
 
 # open mongodb connection
 client = MongoClient(config.mongoDB())
@@ -19,7 +18,7 @@ if len(sys.argv) != 2:
 db = client[db_name]
 
 # loop all videos that do not have any geotags and are younger than 1 year
-videos = db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"], limit=10000)
+videos = db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"], limit=6380)
 print videos.count()
 
 for vid in videos:
@@ -44,18 +43,16 @@ for vid in videos:
 			if entity["type"] == "LOCATION":
 
 				try:
-					location = geolocator.geocode(entity["normalized"])
-					if location:
+					#location = geolocator.geocode(entity["normalized"])
+					l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + urllib.quote_plus(entity["normalized"]) + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
+					locs = l.json()
 
-						print vid["_id"], entity["normalized"], location.longitude, location.latitude
+					if locs and locs.has_key("features") and len(locs["features"]) > 0:
 
-						locations.append({
-							"type": "Point",
-							"coordinates": [
-								location.longitude,
-								location.latitude
-							]
-						})
+						location = locs["features"][0]
+						print vid["_id"], entity["normalized"], location.geometry.coorinates
+
+						locations.append(location.geometry)
 				except:
 					pass
 

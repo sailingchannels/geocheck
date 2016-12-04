@@ -14,11 +14,10 @@ if len(sys.argv) != 2:
 
 db = client[db_name]
 
-# loop all videos that do not have any geotags and are younger than 1 year
-videos = db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"], limit=6380)
-print videos.count()
+for i in range(0, 9000):
 
-for vid in videos:
+	# loop all videos that do not have any geotags and are younger than 1 year
+	vid = db.videos.find_one({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"])
 
 	txt = vid["title"] + " " + vid["description"]
 
@@ -39,19 +38,16 @@ for vid in videos:
 		for entity in result["entities"]:
 			if entity["type"] == "LOCATION":
 
-				try:
-					#location = geolocator.geocode(entity["normalized"])
-					l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + urllib.quote_plus(entity["normalized"]) + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
-					locs = l.json()
+				#location = geolocator.geocode(entity["normalized"])
+				l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + urllib.quote_plus(entity["normalized"]) + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
+				locs = l.json()
 
-					if locs and locs.has_key("features") and len(locs["features"]) > 0:
+				if locs and locs.has_key("features") and len(locs["features"]) > 0:
 
-						location = locs["features"][0]
-						print vid["_id"], entity["normalized"], location.geometry.coorinates
+					location = locs["features"][0]
+					print vid["_id"], entity["normalized"], location["geometry"]["coordinates"]
 
-						locations.append(location.geometry)
-				except:
-					pass
+					locations.append(location["geometry"])
 
 		if len(locations) > 0:
 			db.videos.update_one({"_id": vid["_id"]}, {"$set": {
@@ -65,3 +61,7 @@ for vid in videos:
 			db.videos.update_one({"_id": vid["_id"]}, {"$set": {
 				"geoChecked": True
 			}})
+	else:
+		db.videos.update_one({"_id": vid["_id"]}, {"$set": {
+			"geoChecked": True
+		}})

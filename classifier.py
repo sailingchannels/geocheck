@@ -14,7 +14,7 @@ if len(sys.argv) != 2:
 
 db = client[db_name]
 
-for i in range(0, 9000):
+for i in range(0, 7087):
 
 	# loop all videos that do not have any geotags and are younger than 1 year
 	vid = db.videos.find_one({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"])
@@ -40,15 +40,18 @@ for i in range(0, 9000):
 
 				place = entity["normalized"].encode("utf-8")
 
-				l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + place + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
-				locs = l.json()
+				try:
+					l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + place + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
+					locs = l.json()
 
-				if locs and locs.has_key("features") and len(locs["features"]) > 0:
+					if locs and locs.has_key("features") and len(locs["features"]) > 0:
 
-					location = locs["features"][0]
-					print vid["_id"], place, location["geometry"]["coordinates"]
+						location = locs["features"][0]
+						print vid["_id"], place, location["geometry"]["coordinates"]
 
-					locations.append(location["geometry"])
+						locations.append(location["geometry"])
+				except:
+					pass
 
 		if len(locations) > 0:
 			db.videos.update_one({"_id": vid["_id"]}, {"$set": {

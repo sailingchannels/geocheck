@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-import config, sys, time, requests, json, urllib
+import config, sys, time, requests, json
 
 # open mongodb connection
 client = MongoClient(config.mongoDB())
@@ -38,17 +38,9 @@ for i in range(0, 9000):
 		for entity in result["entities"]:
 			if entity["type"] == "LOCATION":
 
-				#location = geolocator.geocode(entity["normalized"])
 				place = entity["normalized"]
 
-				try:
-				    unicode(place, "ascii")
-				except UnicodeError:
-				    place = unicode(place, "utf-8")
-				else:
-				    pass
-
-				l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + urllib.quote(place) + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
+				l = requests.get("http://api.mapbox.com/geocoding/v5/mapbox.places/" + place + ".json?access_token=pk.eyJ1Ijoic2FpbGluZ2NoYW5uZWxzIiwiYSI6ImNpbHp5MngxczAwaHp2OW00Y2szOG1oM2wifQ.4w_KaRlbtjBf9_TNQL6SXw")
 				locs = l.json()
 
 				if locs and locs.has_key("features") and len(locs["features"]) > 0:

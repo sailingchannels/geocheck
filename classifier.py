@@ -6,9 +6,6 @@ client = MongoClient(config.mongoDB())
 db_name = "sailing-channels"
 devMode = False
 
-# init geolocator
-geolocator = Nominatim()
-
 # check if dev mode is active
 if len(sys.argv) != 2:
 	db_name += "-dev"

@@ -14,16 +14,19 @@ if len(sys.argv) != 2:
 
 db = client[db_name]
 
-for i in range(0, 7087):
+for i in range(0, 10000):
 
 	# loop all videos that do not have any geotags and are younger than 1 year
 	vid = db.videos.find_one({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"])
+
+	if not vid:
+		continue
 
 	txt = vid["title"] + " " + vid["description"]
 
 	# try to get some place information
 	headers = {
-		"X-RosetteAPI-Key": config.apiKey()[2],
+		"X-RosetteAPI-Key": config.apiKey()[6],
 		"Content-Type": "application/json",
 		"Accept": "application/json"
 	}

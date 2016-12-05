@@ -14,10 +14,8 @@ if len(sys.argv) != 2:
 
 db = client[db_name]
 
-for i in range(0, 10000):
-
-	# loop all videos that do not have any geotags and are younger than 1 year
-	vid = db.videos.find_one({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"])
+# loop all videos that do not have any geotags and are younger than 1 year
+for vid in db.videos.find({"geoChecked": {"$exists": False}}, projection=["_id", "title", "description"]
 
 	if not vid:
 		continue
